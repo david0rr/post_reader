@@ -1,0 +1,49 @@
+### Manual:
+
+post_reader.py [path] [species] [functions] [set_variables]
+
+Example:
+post_reader.py /Users/david_orr/codeml_outputs/ saiga BCV b_range=10 c_range=10 gaps_cutoff=0.8 dist=0.3
+
+path = path to directory containing all CodeML outputs (contain different gene_family_ids)
+
+species = highlight species to compare against other species
+
+functions = Any combination of B, C or U
+	
+	B:
+		Perform analysis on surrounding region of site and filter depending on proportion of gaps
+	C:
+		Perform analysis on surrounding region of site and filter depending on conservation score.
+	U:	
+		Perform analysis on selected site and filter if unique substitution has occured in selected species
+
+set_variables = Any combination of b_range, c_range, gaps_cutoff, dist
+	
+	b_range = length of sites flanking selected site subject to 'B' analysis. I.e. set to 10 will take into consideration the 10 sites either side of the positively selected site. Default is set to 20.
+
+	c_range = length of sites flanking selected site subject to 'C' analysis. I.e. set to 10 will take into consideration the 10 sites either side of the positively selected site. Default is set to 5. 
+
+	gaps_cutoff = Minimum proportion of sites in specified flanking regions that are not gaps for site to pass analysis. Value must be between 0-1. Default is set to 0.75.
+
+	dist = Minimum phylogenetic distance between sequence of selected species and consensus sequence of all other species. Distance is calculated using the BLOSUM62 distance matrix. Value must be between 0-1, with 0 being identical sequences and 1 being completely different amino acids at each site. Default is set to 0.1.
+
+
+
+
+
+
+Program Pipeline: 
+        [1] get dictionary of all (working directory, species) >>> compulsory function *
+        [2] get dictionary of unique sites (dictionary, species) >>> optional function *
+        [3] pull blank sites (dictionary, blank_range) >>> optional_function
+        [4] analyse blank sites (previous_dict, gap_cutoff, species) >>> compulsory function if function [3] performed
+        [5] pull conserved sites (dictionary, conserv_site_range) >>> optional_function
+        [6] analyse conserv_sites (previous_dict, conserv_site_range, species) >>> compulsory function if function [5] performed
+        
+        [7] Find unique outputs in final dict 
+        [8] Convert to CSV 
+
+
+
+
