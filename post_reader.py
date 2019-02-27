@@ -105,19 +105,19 @@ def retrieve_selected_sites(path, species):
         selected_sequence = []
         positively_selected_sites = []
         for record in SeqIO.parse(alignment, 'fasta'):
-            if record.id == 'PS_Sites|' + species: 
+            if 'PS_Characters|' + species + '|' in record.id: 
                 for character in str(record.seq):
                     selected_sequence.append(character)
         for position, char in enumerate(selected_sequence):
-            if char == 'N':
+            if char != '-':
                 positively_selected_sites.append(position)
+        #print (positively_selected_sites)
         aa_positively_selected_sites = positively_selected_sites[0::3] # Transform from nuc positions to amino acid
         myInt = 3
         aa_positively_selected_sites[:] = [int(x / myInt) for x in aa_positively_selected_sites]
         family = alignment.rpartition('/')[0].rpartition('/')[2]
         non_list = ', '.join(map(str, aa_positively_selected_sites))
-        selected_sites[family] = non_list
-        
+        selected_sites[family] = non_list   
     return selected_sites
 
 
@@ -130,9 +130,7 @@ def unique_selected_sites(path, sites, species):
     
     for family, positions in sites.items():
         alignment = (path + family + '/PosSites_' + family + '_' + species + '_modelA.fasta')
-    
-        unique_sites = {}
-        
+          
         records = list(SeqIO.parse(alignment, "fasta")) 
         seq_dict = {} #dictionary of all sequences in amino acid form, seperated by species
         for i in range(2,len(records)):#skip selection data output sequences from VESPA output
@@ -140,26 +138,30 @@ def unique_selected_sites(path, sites, species):
             seq = str(records[i].seq)
             aa_seq = Seq(seq, Gapped(generic_dna, "-")).translate()
             seq_dict[id] = str(aa_seq)
+        
         #Write list of positively selected sites in each species, see if Saiga is unique and all other conserved
         passed_sites = []
-        
         list_positions = positions.split(",")
         #print (list_positions)
         for index in list_positions: #iterate through all positively selected sites
             index = int(index)
+            saiga_character = []
             other_species = []
             for key, value in seq_dict.items():#if species' amino acid is not a gap add all species to dictionary 
                 if key == species and value[index] == '-':
                     pass
                 if key == species and value[index] != '-':
-                    saiga_character = value[index]
+                    saiga_character.append(value[index])
                 else:
                     other_species.append(value[index])
-            if all(x == other_species[0] or x == '-' or x == 'X' for x in other_species):
+            if all(x == other_species[0] and x not in saiga_character or x == '-' or x == 'X' for x in other_species):
                 passed_sites.append(str(index + 1))#Increase index number by one to account for python array
 
         passed_sites_unlist = ', '.join(passed_sites)
         dictionary[family] = passed_sites_unlist
+
+        print (sites)
+        print (passed_sites_unlist)
     return dictionary
   
     
