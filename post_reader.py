@@ -105,9 +105,10 @@ def retrieve_selected_sites(path):
         selected_sequence = []
         positively_selected_sites = []
         for record in SeqIO.parse(alignment, 'fasta'):
-            if 'PS_Characters|' in record.id: 
+            if 'PS_Sites|' in record.id: 
                 for character in str(record.seq):
                     selected_sequence.append(character)
+        #print (selected_sequence)
         for position, char in enumerate(selected_sequence):
             if char != '-':
                 positively_selected_sites.append(position)
@@ -118,6 +119,7 @@ def retrieve_selected_sites(path):
         family = alignment.rpartition('/')[0].rpartition('/')[2]
         non_list = ', '.join(map(str, aa_positively_selected_sites))
         selected_sites[family] = non_list   
+    #print (selected_sites)
     return selected_sites
 
 
@@ -129,10 +131,12 @@ def unique_selected_sites(path, sites, species):
     dictionary = {}
     
     for family, positions in sites.items():
-        alignment = (path + family + '/PosSites_' + family + '_' + species + '_modelA.fasta')
+        alignment_path = glob.glob(path + family + '/PosSites_' + family + '*modelA.fasta')
+        alignment = alignment_path[0]
+        #print(alignment)
           
         records = list(SeqIO.parse(alignment, "fasta")) 
-        seq_dict = {} #dictionary of all sequences in amino acid form, seperated by species
+        seq_dict = {} #dictionary of all sequences in amino acid form, (species:sequence)
         for i in range(1,len(records)):#skip selection data output sequences from VESPA output
             if 'PS_Characters' not in records[i].id:
                 id = records[i].id.partition('|')[0]
@@ -148,21 +152,29 @@ def unique_selected_sites(path, sites, species):
             index = int(index)
             species_character = []
             other_species = []
+            
             for key, value in seq_dict.items():#if species' amino acid is not a gap add all species to dictionary 
-                if key == species and value[index] == '-':
+                #print (key, value[index])
+                if (key in species) and value[index] == '-' :
                     pass
-                if key == species and value[index] != '-':
+                if (key in species) and value[index] != '-' :
                     species_character.append(value[index])
-                else:
+                if (key not in species):
                     other_species.append(value[index])
-            if all(x == other_species[0] and x not in species_character or x == '-' or x == 'X' for x in other_species):
+            if '-' in species_character:
+                species_character.remove('-')
+            if '-' in other_species:
+                other_species.remove('-')
+            if (len(set(species_character)) == 1 ) and (len(set(other_species)) == 1) and (x not in species_character for x in other_species) :
                 passed_sites.append(str(index + 1))#Increase index number by one to account for python array
 
+            #print (species_character)
+            #print (other_species)
+            #print (passed_sites)
         passed_sites_unlist = ', '.join(passed_sites)
         dictionary[family] = passed_sites_unlist
+        #print (passed_sites)
 
-        print (sites)
-        print (passed_sites_unlist)
     return dictionary
   
     
