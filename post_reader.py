@@ -40,7 +40,7 @@ def function_set(path, species, options, unique_sub = False, blanks = False, con
     print ('Conserved region analysis size: ' + str(conserv_site_range) + ' sites')
     print ('Minimum distance between consensus and species sequence: ' + str(minimum_distance))
     
-    sites_index = retrieve_selected_sites(path, species)
+    sites_index = retrieve_selected_sites(path)
     if unique_sub == True:
         print ('Running unique substitution identification...')
         passed_unique_selected_sites = unique_selected_sites(path, sites_index, species)
@@ -92,12 +92,12 @@ def final_output(dictionary):
     return df.to_csv('filtered_positively_selected_sites.tsv', sep='\t', index_label = 'Gene_family', header = ['Positively_selected_sites'])
     
 
-def retrieve_selected_sites(path, species):
+def retrieve_selected_sites(path):
     '''Use alignment outputted from codeml_reader to give 
     co-ordinates of positively selected sites'''
     
     
-    alignment_files = glob.glob(path + '*/PosSites_*_' + species + '_modelA.fasta')
+    alignment_files = glob.glob(path + '*/PosSites*modelA.fasta')
     selected_sites = {}
     
     for alignment in alignment_files:
@@ -105,7 +105,7 @@ def retrieve_selected_sites(path, species):
         selected_sequence = []
         positively_selected_sites = []
         for record in SeqIO.parse(alignment, 'fasta'):
-            if 'PS_Characters|' + species + '|' in record.id: 
+            if 'PS_Characters|' in record.id: 
                 for character in str(record.seq):
                     selected_sequence.append(character)
         for position, char in enumerate(selected_sequence):
@@ -133,11 +133,12 @@ def unique_selected_sites(path, sites, species):
           
         records = list(SeqIO.parse(alignment, "fasta")) 
         seq_dict = {} #dictionary of all sequences in amino acid form, seperated by species
-        for i in range(2,len(records)):#skip selection data output sequences from VESPA output
-            id = records[i].id.partition('|')[0]
-            seq = str(records[i].seq)
-            aa_seq = Seq(seq, Gapped(generic_dna, "-")).translate()
-            seq_dict[id] = str(aa_seq)
+        for i in range(1,len(records)):#skip selection data output sequences from VESPA output
+            if 'PS_Characters' not in records[i].id:
+                id = records[i].id.partition('|')[0]
+                seq = str(records[i].seq)
+                aa_seq = Seq(seq, Gapped(generic_dna, "-")).translate()
+                seq_dict[id] = str(aa_seq)
         
         #Write list of positively selected sites in each species, see if Saiga is unique and all other conserved
         passed_sites = []
@@ -145,16 +146,16 @@ def unique_selected_sites(path, sites, species):
         #print (list_positions)
         for index in list_positions: #iterate through all positively selected sites
             index = int(index)
-            saiga_character = []
+            species_character = []
             other_species = []
             for key, value in seq_dict.items():#if species' amino acid is not a gap add all species to dictionary 
                 if key == species and value[index] == '-':
                     pass
                 if key == species and value[index] != '-':
-                    saiga_character.append(value[index])
+                    species_character.append(value[index])
                 else:
                     other_species.append(value[index])
-            if all(x == other_species[0] and x not in saiga_character or x == '-' or x == 'X' for x in other_species):
+            if all(x == other_species[0] and x not in species_character or x == '-' or x == 'X' for x in other_species):
                 passed_sites.append(str(index + 1))#Increase index number by one to account for python array
 
         passed_sites_unlist = ', '.join(passed_sites)
