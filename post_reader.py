@@ -112,7 +112,7 @@ def retrieve_selected_sites(path):
         for position, char in enumerate(selected_sequence):
             if char != '-':
                 positively_selected_sites.append(position)
-        print (positively_selected_sites)
+        #print (positively_selected_sites)
         aa_positively_selected_sites = positively_selected_sites[0::3] # Transform from nuc positions to amino acid
         myInt = 3
         aa_positively_selected_sites[:] = [int(x / myInt) for x in aa_positively_selected_sites]
@@ -133,7 +133,7 @@ def unique_selected_sites(path, sites, species):
     for family, positions in sites.items():
         alignment_path = glob.glob(path + family + '/PosSites_' + family + '*modelA.fasta')
         alignment = alignment_path[0]
-        print(alignment)
+        #print(alignment)
           
         records = list(SeqIO.parse(alignment, "fasta")) 
         seq_dict = {} #dictionary of all sequences in amino acid form, (species:sequence)
@@ -168,12 +168,12 @@ def unique_selected_sites(path, sites, species):
             if (len(set(species_character)) == 1 ) and (len(set(other_species)) == 1) and (x not in species_character for x in other_species) :
                 passed_sites.append(str(index + 1))#Increase index number by one to account for python array
 
-            print (species_character)
-            print (other_species)
-            print (passed_sites)
+            #print (species_character)
+            #print (other_species)
+            #print (passed_sites)
         passed_sites_unlist = ', '.join(passed_sites)
         dictionary[family] = passed_sites_unlist
-        print (passed_sites)
+        #print (passed_sites)
 
     return dictionary
   
