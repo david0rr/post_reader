@@ -24,7 +24,7 @@ report [create-report] ❌
 
 species ✅
 
-multiple species ❌
+multiple species 🕒
 
 ### UPDATES
 ---
@@ -32,4 +32,13 @@ multiple species ❌
 Abilty to output dataframe report detailing which sites were filtered/passed at each step
 
 Function to apply commands to particular species or lineage
+
+Unique substitution can now be applied to a list of species
+
+### IN PROGRESS
+---
+
+Make conservation and blanks functional with a list of species
+
+Replace sys.agrv with arg parse
 
