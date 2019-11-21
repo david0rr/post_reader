@@ -26,6 +26,10 @@ species ✅
 
 multiple species :white_check_mark:
 
+unique_sub only :clock2:
+
+alignment viewer image output :x:
+
 ### UPDATES
 ---
 
