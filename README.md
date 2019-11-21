@@ -64,8 +64,8 @@ Arguments for script include:
 ```Shell
 --path		(required)
 --AA_fasta	(required)
---species  	(optional :exclamation:)
---species_list	(optional :exclamation:)
+--species  	(optional !)
+--species_list	(optional !)
 --b_range      	(optional)
 --c_range	(optional)
 --gaps_cutoff	(optional)
