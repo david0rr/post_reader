@@ -1,7 +1,7 @@
 ### POST READER README
 ---
 
-Post_reader is a tool to be utilised after the analysis of postive site dectection using ~~VESPA or VESPA-slim~~ [Vespasian](https://github.com/bede/vespasian).
+Post_reader is a tool to be utilised after the analysis of postive site detection using ~~VESPA or VESPA-slim~~ [Vespasian](https://github.com/bede/vespasian).
 
 Post_reader will look to sift throught the outputs of any ~~VESPA~~ [Vespasian](https://github.com/bede/vespasian) analysis and will remove any controversial detected sites through three analyses: 
   1. unique site substitutions in desired species
