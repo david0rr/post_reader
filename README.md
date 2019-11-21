@@ -55,3 +55,17 @@ Create alignment viewer image with sites labelled in command line using [Jalview
 
 The directory `example/` above shows an example on how to run post_reader
 
+Arguments for script include:
+
+```Shell
+--path		(required)
+--AA_fasta	(required)
+--species  	(optional!)
+--species_list	(optional!)
+--b_range      	(optional)
+--c_range	(optional)
+--gaps_cutoff	(optional)
+--dist		(optional)
+```
+
+Arguments with ! symbol mean that at least one of them must be used
