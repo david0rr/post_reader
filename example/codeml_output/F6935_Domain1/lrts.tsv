@@ -1,0 +1,8 @@
+tree	lrt	null_model_lnl	alt_model_lnl	lrt_result	p	critical_value	null_rejected
+F6935_Domain1_nuc_regions	m0 vs. m3Discrtk2	-18768.836033	-18472.725033	592.2220000000016	8.233684127859025e-131	5.991	True
+F6935_Domain1_nuc_regions	m1Neutral vs. m2Selection	-18663.440227	-18663.440227	0.0	1.0	5.991	False
+F6935_Domain1_nuc_regions	m3Discrtk2 vs. m3Discrtk3	-18472.725033	-18446.342097	26.382935999998153	2.800032651238952e-07	1.0	True
+F6935_Domain1_nuc_regions	m7 vs. m8	-18451.051526	-18451.052842	0.0026320000033592805	0.9590840605589496	5.991	False
+F6935_Domain1_nuc_regions	m8 vs. m8a	-18451.052842	-18451.052842	0.0	1.0	2.706	False
+F6935_Domain1_nuc_regions_composite	m1Neutral vs. modelA	-18663.440227	-18624.665349	77.54975600000034	1.2942080222042108e-18	5.991	True
+F6935_Domain1_nuc_regions_composite	modelAnull vs. modelA	-18636.348634	-18624.665349	23.366570000005595	1.3388519626492537e-06	3.841	True
