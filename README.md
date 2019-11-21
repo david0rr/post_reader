@@ -64,12 +64,12 @@ Arguments for script include:
 ```Shell
 --path		(required)
 --AA_fasta	(required)
---species  	(optional!)
---species_list	(optional!)
+--species  	(optional :exclamation:)
+--species_list	(optional :exclamation:)
 --b_range      	(optional)
 --c_range	(optional)
 --gaps_cutoff	(optional)
 --dist		(optional)
 ```
 
-Arguments with ! symbol mean that at least one of them must be used
+Arguments with :exclamation: symbol mean that at least one of them must be used
