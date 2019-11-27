@@ -35,7 +35,8 @@ alignment viewer image output :x:
 
 * Code updated for vespasian outputs:
   1. Load original aligned AA fasta file into memory as a dictionary
-  2. Parse vespasian summary.tsv file to find positively selected sites
+  2. Parse branches.yaml file of branch labelled species
+  3. Parse vespasian summary.tsv file to find positively selected sites
 
 * Ability to run filter tests on multiple species at once
 
@@ -49,8 +50,6 @@ alignment viewer image output :x:
 Run `unique_selected_sites` function only - right now it runs all filter functions (use `cli.py` file to do this)
 
 Update the output pass function
-
-Allow script to load `branches.yaml` file to get the list of species rather than using --species_list multiple times
 
 Create alignment viewer image with sites labelled in command line using [Jalview](http://www.jalview.org/help/html/features/commandline.html)
 
