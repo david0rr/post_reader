@@ -90,8 +90,8 @@ def report_parse(path):
             neb_sites = lines[7]
             beb_sites = lines[8]
             if pos_sel_sites == 'yes':
-                neb_sites_split = neb_sites.split(' ')
-                for site in neb_sites_split:
+                beb_sites_split = beb_sites.split(' ')
+                for site in beb_sites_split:
                     locus = site.split(':')[0]
                     position = locus[:-1]
                     AA = locus[-1]
