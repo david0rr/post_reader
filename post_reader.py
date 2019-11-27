@@ -20,7 +20,7 @@ parse.add_argument("--path",type=str, help="path to vespasian output",required=T
 
 parse.add_argument("--AA_fasta",type=str,help="path to and name of the original aligned AA fasta file that analysis was run on",required=True)
 parse.add_argument("--species",type=str,help="name of species in alignment file under analysis")
-parse.add_argument("--species_list",action='append',help="single species or list of species in alignment file under analysis")
+parse.add_argument("--species_list",type=str,help="path to and name of branches file that vespasian analysis was run on",required=True)
 
 parse.add_argument("--b_range", type=int, default=20,help="number of sites either side of selected site to include in blanks analysis default:20") 
 parse.add_argument("--c_range", type=int, default=5,help="number of sites either side of selected site to include in conservation analysis default:5") 
@@ -33,7 +33,6 @@ args = parse.parse_args()
 path = args.path
 aligned_fasta = args.AA_fasta
 species  = args.species
-species_list  = args.species_list
 blanks_site_range = args.b_range
 conserv_site_range  = args.c_range
 gaps_cutoff  = args.gaps_cutoff
@@ -53,6 +52,18 @@ def failed_final_output(dict1, dict2, dict3):
     df = pd.DataFrame.from_dict(combine_dict, orient = 'index')
     return df.to_csv('failed_positively_selected_sites.tsv', sep='\t', index_label = 'Gene_family', header = False)
     
+
+def parse_species(branches):
+    '''Function to get list of multiple branch labelled species (if 
+    that option was used in vespasian analysis)'''
+    branches_file = args.species_list
+    with open(branches_file) as f:
+        for line in f:
+            lines = line.split(':')
+            species_label = lines[1].strip()
+            species_label = species_label.strip('[').strip(']').replace(', ', ',').split(',')
+
+    return(species_label)
 
 
 def report_parse(path):
@@ -381,6 +392,7 @@ def conservation_analysis(path, gene_dict, similarity_cutoff, species):
     return conserv_passed_sites, conserv_rejected_sites
 
 
+species_list  = parse_species(args.species_list)
 
 sites = retrieve_selected_sites(path)
 
