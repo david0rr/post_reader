@@ -51,8 +51,6 @@ Run `unique_selected_sites` function only - right now it runs all filter functio
 
 Update the output pass function
 
-Allow script to load `branches.yaml` file to get the list of species rather than using --species_list multiple times
-
 Create alignment viewer image with sites labelled in command line using [Jalview](http://www.jalview.org/help/html/features/commandline.html)
 
 ### USAGE
