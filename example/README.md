@@ -4,7 +4,7 @@
 Using default parameters and specifying a single species to label
 
 ```Shell
-python post_reader.py --path codeml_output/F6935_Domain1/ --AA_fasta original_fasta/F6935_Domain1.fasta.vespa.mft --species DANRE05082
+python post_reader.py --path codeml_output/F6935_Domain1/ --AA_fasta original_fasta/F6935_Domain1.fasta.vespa.mft --species_list DANRE05082
 ```
 
 Using default parameters and specifying multiple species
