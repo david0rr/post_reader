@@ -19,7 +19,7 @@ parse = argparse.ArgumentParser()
 parse.add_argument("--path",type=str, help="path to vespasian output",required=True)
 
 parse.add_argument("--AA_fasta",type=str,help="path to and name of the original aligned AA fasta file that analysis was run on",required=True)
-parse.add_argument("--species",type=str,help="name of species in alignment file under analysis")
+#parse.add_argument("--species",type=str,help="name of species in alignment file under analysis")
 parse.add_argument("--species_list",type=str,help="path to and name of branches file that vespasian analysis was run on",required=True)
 
 parse.add_argument("--b_range", type=int, default=20,help="number of sites either side of selected site to include in blanks analysis default:20") 
@@ -57,11 +57,14 @@ def parse_species(branches):
     '''Function to get list of multiple branch labelled species (if 
     that option was used in vespasian analysis)'''
     branches_file = args.species_list
-    with open(branches_file) as f:
-        for line in f:
-            lines = line.split(':')
-            species_label = lines[1].strip()
-            species_label = species_label.strip('[').strip(']').replace(', ', ',').split(',')
+    if isinstance(branches_file, str):
+        species_label = branches_file
+    else:
+        with open(branches_file) as f:
+            for line in f:
+                lines = line.split(':')
+                species_label = lines[1].strip()
+                species_label = species_label.strip('[').strip(']').replace(', ', ',').split(',')
 
     return(species_label)
 
