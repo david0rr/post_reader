@@ -22,7 +22,7 @@ conservation ✅
 
 report [create-report] :white_check_mark:
 
-species ✅
+single species ✅
 
 multiple species :white_check_mark:
 
@@ -63,12 +63,11 @@ Arguments for script include:
 ```Shell
 --path		(required)
 --AA_fasta	(required)
---species  	(optional !)
---species_list	(optional !)
+--species_list	(required)
 --b_range      	(optional)
 --c_range	(optional)
 --gaps_cutoff	(optional)
 --dist		(optional)
 ```
 
-Arguments with :exclamation: symbol mean that at least one of them must be used
+`--species_list` argument can be a `branches.yaml` file (if analysing a labelled branch) or a single species name (if analysing a single species) 
