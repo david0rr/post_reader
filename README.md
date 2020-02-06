@@ -70,4 +70,4 @@ Arguments for script include:
 --dist		(optional)
 ```
 
-
+`--species_list` argument can be a `branches.yaml` file (if analysing a labelled branch) or a single species name (if analysing a single species) 
