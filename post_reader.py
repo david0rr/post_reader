@@ -121,6 +121,7 @@ def report_parse(path, branch):
         seq_len.append(len(seq))
     seq_len = seq_len[0]
 
+    no_sites = {}
     AA_position_sites = []
     vespasian_summary = path + 'summary.tsv'
     with open(vespasian_summary) as f:
@@ -142,7 +143,11 @@ def report_parse(path, branch):
                         AA = locus[-1]
                         AA_position_sites.append(position)
                 else:
-                    sys.exit('ERROR: No sites under selection for specified branch')
+                    no_sites[fam] = ""
+                    df = pd.DataFrame.from_dict(no_sites, orient = 'index')
+                    df.to_csv('passed_positively_selected_sites.tsv', sep='\t', index_label = 'Gene_family', header = False)
+                    df.to_csv('failed_positively_selected_sites.tsv', sep='\t', index_label = 'Gene_family', header = False)
+                    sys.exit("No positively selected sites found")
 
 
     posSel_sites = []
