@@ -19,7 +19,6 @@ parse = argparse.ArgumentParser()
 parse.add_argument("--path",type=str, help="path to vespasian output",required=True)
 
 parse.add_argument("--AA_fasta",type=str,help="path to and name of the original aligned AA fasta file that analysis was run on",required=True)
-#parse.add_argument("--species",type=str,help="name of species in alignment file under analysis")
 parse.add_argument("--species_list",type=str,help="path to and name of branches file that vespasian analysis was run on",required=True)
 
 parse.add_argument("--b_range", type=int, default=20,help="number of sites either side of selected site to include in blanks analysis default:20") 
@@ -32,7 +31,6 @@ args = parse.parse_args()
 
 path = args.path
 aligned_fasta = args.AA_fasta
-species  = args.species
 blanks_site_range = args.b_range
 conserv_site_range  = args.c_range
 gaps_cutoff  = args.gaps_cutoff
@@ -41,37 +39,79 @@ similarity_cutoff  = args.dist
 
 def passed_final_output(dict1, dict2, dict3):
     '''Take return of passed sites function and export a CSV of outputs'''
-    combine_dict = {**dict1 , **dict2, **dict3}
+    combine_dict = defaultdict(list)
+
+    for k,v in dict1.items():
+        gene_family = k
+        list1 = list(map(int, v))
+    for k,v in dict2.items():
+        list2 = list(map(int, v))
+    for k,v in dict3.items():
+        list3 = list(map(int, v))
+
+    vals = list(set(list1).intersection(list2).intersection(list3))
+
+    combine_dict[gene_family] = sorted(vals)
+
     df = pd.DataFrame.from_dict(combine_dict, orient = 'index')
     return df.to_csv('passed_positively_selected_sites.tsv', sep='\t', index_label = 'Gene_family', header = False)
 
 
 def failed_final_output(dict1, dict2, dict3):
     '''Take return of failed sites function and export a CSV of outputs'''
-    combine_dict = {**dict1 , **dict2, **dict3}
+    combine_dict = defaultdict(list)
+
+    for k,v in dict1.items():
+        gene_family = k
+        list1 = list(map(int, v))
+    for k,v in dict2.items():
+        list2 = list(map(int, v))
+    for k,v in dict3.items():
+        list3 = list(map(int, v))
+    
+
+    #Combine lists
+    vals = list(set(list1).union(list2, list3))
+
+    #Filter None values and remove dupes
+    vals = list(set(filter(None, vals)))
+
+    combine_dict[gene_family] = sorted(vals)
+
     df = pd.DataFrame.from_dict(combine_dict, orient = 'index')
     return df.to_csv('failed_positively_selected_sites.tsv', sep='\t', index_label = 'Gene_family', header = False)
     
 
-def parse_species(branches):
+def parse_species(species_file):
     '''Function to get list of multiple branch labelled species (if 
     that option was used in vespasian analysis)'''
-    branches_file = args.species_list
-    if isinstance(branches_file, str):
-        species_label = branches_file
-    else:
-        with open(branches_file) as f:
+    if os.path.isfile(species_file):
+        with open(species_file) as f:
             for line in f:
                 lines = line.split(':')
                 species_label = lines[1].strip()
                 species_label = species_label.strip('[').strip(']').replace(', ', ',').split(',')
+    else:
+        species_label = species_file
 
-    return(species_label)
+    return species_label
 
+def parse_branch(branch_file):
+    '''Function to get list of multiple branch labelled species (if 
+    that option was used in vespasian analysis)'''
+    if os.path.isfile(branch_file):
+        with open(branch_file) as f:
+            for line in f:
+                lines = line.split(':')
+                branch_label = lines[0]
+    else:
+        branch_label = branch_file
 
-def report_parse(path):
+    return branch_label
+
+def report_parse(path, branch):
     posSel_site_dict = dict()
-    original_align_fasta = aligned_fasta#requires path and file name for original AA alignemnt file
+    original_align_fasta = aligned_fasta#requires path and file name for original AA alignment file
 
     seq_len = []
     for record in SeqIO.parse(original_align_fasta, 'fasta'):
@@ -88,17 +128,22 @@ def report_parse(path):
             lines = line.split('\t')
             fam = lines[0]
             tree = lines[1]
+            tree_branch = tree.rpartition("_")[2]
             model = lines[2]
             pos_sel_sites = lines[6]
             neb_sites = lines[7]
             beb_sites = lines[8]
-            if pos_sel_sites == 'yes':
-                beb_sites_split = beb_sites.split(' ')
-                for site in beb_sites_split:
-                    locus = site.split(':')[0]
-                    position = locus[:-1]
-                    AA = locus[-1]
-                    AA_position_sites.append(position)
+            if tree_branch == branch and model == "modelA":
+                if pos_sel_sites == 'yes':
+                    beb_sites_split = beb_sites.split(' ')
+                    for site in beb_sites_split:
+                        locus = site.split(':')[0]
+                        position = locus[:-1]
+                        AA = locus[-1]
+                        AA_position_sites.append(position)
+                else:
+                    sys.exit('ERROR: No sites under selection for specified branch')
+
 
     posSel_sites = []
     for pos in range(seq_len):
@@ -113,13 +158,13 @@ def report_parse(path):
     return posSel_site_dict
 
 
-def retrieve_selected_sites(path):
+def retrieve_selected_sites(path, branch):
     '''Use alignment outputted from codeml_reader to give 
     co-ordinates of positively selected sites'''
 
     selected_sites = defaultdict(list)
     
-    posSel_site_dict = report_parse(path)
+    posSel_site_dict = report_parse(path, branch)
 
     selected_sequence = []
     positively_selected_sites = []
@@ -141,7 +186,7 @@ def retrieve_selected_sites(path):
     return selected_sites
 
 
-def unique_selected_sites(path, sites, species):
+def unique_selected_sites(path, sites, species, branch):
     '''From all sites under positive selection find only those that have amino acid differences
     unique to the species specified'''
     
@@ -151,7 +196,7 @@ def unique_selected_sites(path, sites, species):
     for family, positions in sites.items():
         pos_sites_count = len(positions)
 
-        posSel_site_dict = report_parse(path)
+        posSel_site_dict = report_parse(path, branch)
 
         seq_dict = {} 
         for ID, seq in posSel_site_dict.items():
@@ -214,7 +259,7 @@ def pull_sites(selected_sites, site_range):
 
     return gene_dict
 
-def count_blanks(path, gene_dict, gaps_cutoff, species):
+def count_blanks(path, gene_dict, gaps_cutoff, species, branch):
     '''Iterate through sites with unique amino acid substitutions and check defined flanking regions filtering 
     any sites that contain more gaps than threshold'''
 
@@ -222,7 +267,7 @@ def count_blanks(path, gene_dict, gaps_cutoff, species):
     blank_failed_sites = defaultdict(list)
 
     for family in gene_dict.keys():
-        original_dict = report_parse(path)
+        original_dict = report_parse(path, branch)
 
         seq_dict = {}
         for ID, seq in original_dict.items():
@@ -259,7 +304,7 @@ def count_blanks(path, gene_dict, gaps_cutoff, species):
             passed = []
             failed = []
             for sel_site, flank_sites in sites.items():
-                py_index = [x-1 for x in flank_sites] #account for zero index
+                py_index = [x-1 for x in flank_sites] 
                 species_region = {}
                 for k, v in seq_dict.items():
                     region = []
@@ -281,21 +326,22 @@ def count_blanks(path, gene_dict, gaps_cutoff, species):
                     sites_passed = sp_passed.values()
                     sites_list = []
                     for sites in sites_passed:
-                        sites_list.append(sites[0])
+                        sites_list.append(sites[0]+1)#account for zero index
                     passed_site = sites_list[0]
                     passed.append(passed_site)
                     passed_sites_count = len(passed)
                     blank_passed_sites[family] = passed
+                    if bool(blank_failed_sites) == False:
+                        blank_failed_sites[family] = []
                 else:
-                    failed.append(sel_site)
+                    failed.append(sel_site+1)#account for zero index
                     blank_failed_sites[family] = failed
-
-
+    
     print(sel_site_count - passed_sites_count, 'sites dropped due to too many gaps')
     return blank_passed_sites, blank_failed_sites
 
 
-def conservation_analysis(path, gene_dict, similarity_cutoff, species):
+def conservation_analysis(path, gene_dict, similarity_cutoff, species, branch):
 
     conserv_passed_sites = defaultdict(list)
     conserv_rejected_sites = defaultdict(list)  
@@ -304,7 +350,7 @@ def conservation_analysis(path, gene_dict, similarity_cutoff, species):
         passed_sites = []
         rejected_sites = []
 
-        original_dict = report_parse(path)
+        original_dict = report_parse(path, branch)
        
         #Grab all the sites in the flanks of the selected sites 
         seq_dict = {}
@@ -321,7 +367,7 @@ def conservation_analysis(path, gene_dict, similarity_cutoff, species):
 
         #Take the flanked sites and combine them into a matrix
         for sel_site, flank_sites in sites.items():
-            py_index = [x-1 for x in flank_sites] #account for zero index
+            py_index = [x-1 for x in flank_sites] 
             region = {}
             for k, v in seq_dict.items():
                 region_seqs = []
@@ -364,9 +410,9 @@ def conservation_analysis(path, gene_dict, similarity_cutoff, species):
 
             if isinstance(species, str):#If analysis a single species or multiple species
                 if dm[0][1] < similarity_cutoff:
-                    passed_sites.append(sel_site)
+                    passed_sites.append(sel_site+1)#reset for zero index
                 else:
-                    rejected_sites.append(sel_site)
+                    rejected_sites.append(sel_site+1)#reset for zero index
             else:
                 species_count = len(species)
                 dist_list = []
@@ -375,16 +421,16 @@ def conservation_analysis(path, gene_dict, similarity_cutoff, species):
 
 
                 if any(dist < similarity_cutoff for dist in dist_list):#Conservation is passed if any species seq passes filter
-                    passed_sites.append(sel_site)
+                    passed_sites.append(sel_site+1)#reset for zero index
                 else:
-                    rejected_sites.append(sel_site)
+                    rejected_sites.append(sel_site+1)#reset for zero index
 
 ##Currently, sites pass if at least one species satisfies filter, use below code if you want an average across species instead
 #                avg_dist_species = sum(dist_list)/len(dist_list)#Conservation is passed if the average distance score passes filter
 #                if avg_dist_species < similarity_cutoff:
-#                    passed_sites.append(sel_site)
+#                    passed_sites.append(sel_site+1)#reset for zero index
 #                else:
-#                    rejected_sites.append(sel_site)
+#                    rejected_sites.append(sel_site+1)#reset for zero index
 
         conserv_passed_sites[family] = passed_sites
         conserv_rejected_sites[family] = rejected_sites
@@ -396,8 +442,9 @@ def conservation_analysis(path, gene_dict, similarity_cutoff, species):
 
 
 species_list  = parse_species(args.species_list)
+branch_list = parse_branch(args.species_list)
 
-sites = retrieve_selected_sites(path)
+sites = retrieve_selected_sites(path, branch_list)
 
 #If just unique sites function is run - need to create some flag specific to this function
 #unique_selected_sites(path, sites, species_list)
@@ -408,9 +455,11 @@ if (blanks_site_range is not None) and (conserv_site_range is not None) and (gap
     gene_dict_blank = pull_sites(sites, blanks_site_range)
     gene_dict_conserv = pull_sites(sites, conserv_site_range)
 
-    unique_sites_passed = unique_selected_sites(path, sites, species_list)
-    blank_count_pass = count_blanks(path, gene_dict_blank, gaps_cutoff, species_list)
-    conserv_score_pass = conservation_analysis(path, gene_dict_conserv, similarity_cutoff, species_list)
+    unique_sites_passed = unique_selected_sites(path, sites, species_list, branch_list)
+    blank_count_pass = count_blanks(path, gene_dict_blank, gaps_cutoff, species_list, branch_list)
+    conserv_score_pass = conservation_analysis(path, gene_dict_conserv, similarity_cutoff, species_list, branch_list)
+
+
     passed_final_output(unique_sites_passed[0], blank_count_pass[0], conserv_score_pass[0])
     failed_final_output(unique_sites_passed[1], blank_count_pass[1], conserv_score_pass[1])
 
